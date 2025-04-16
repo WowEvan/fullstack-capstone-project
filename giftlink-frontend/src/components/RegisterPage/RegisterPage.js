@@ -39,6 +39,7 @@ function RegisterPage() {
             sessionStorage.setItem('email', json.email);
             setIsLoggedIn(true);
             navigate('/app');
+        }
         
         if (json.error) {
             setShowerr(json.error);
