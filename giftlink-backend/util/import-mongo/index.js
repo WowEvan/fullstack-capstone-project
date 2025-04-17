@@ -1,50 +1,40 @@
-require('dotenv').config();
 const MongoClient = require('mongodb').MongoClient;
 const fs = require('fs');
+const path = require('path');
+require('dotenv').config();
 
-// MongoDB connection URL with authentication options
 let url = `${process.env.MONGO_URL}`;
 let filename = `${__dirname}/gifts.json`;
 const dbName = 'giftdb';
 const collectionName = 'gifts';
 
-// notice you have to load the array of gifts into the data object
-const data = JSON.parse(fs.readFileSync(filename, 'utf8')).docs;
-
-// connect to database and insert data into the collection
 async function loadData() {
     const client = new MongoClient(url);
 
     try {
-        // Connect to the MongoDB client
         await client.connect();
         console.log("Connected successfully to server");
 
-        // database will be created if it does not exist
         const db = client.db(dbName);
-
-        // collection will be created if it does not exist
         const collection = db.collection(collectionName);
+
         let cursor = await collection.find({});
         let documents = await cursor.toArray();
 
-        if(documents.length == 0) {
-            // Insert data into the collection
+        if(documents.length === 0) {
+            console.log("No documents found, inserting data...");
             const insertResult = await collection.insertMany(data);
             console.log('Inserted documents:', insertResult.insertedCount);
         } else {
-            console.log("Gifts already exists in DB")
+            console.log("Gifts already exists in DB");
         }
     } catch (err) {
-        console.error(err);
+        console.error("Error occurred while processing:", err.message);
     } finally {
-        // Close the connection
         await client.close();
     }
 }
 
-loadData();
+const data = JSON.parse(fs.readFileSync(filename, 'utf8')).docs;
 
-module.exports = {
-    loadData,
-  };
+loadData();
